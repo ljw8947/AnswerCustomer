@@ -1,13 +1,15 @@
 import csv
 import os
+import json
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app, jsonify
 from flask_login import login_required, current_user
 from app.models.issue import Issue
 from app.models.category import Category
 from app.utils.csv_importer import CsvImporter
 from app.utils.category_importer import CategoryImporter
-from app.utils.email_notifier import MockEmailNotifier
+from app.utils.email_notifier import EmailNotifier
+from app.utils.config_manager import ConfigManager
 from functools import wraps
 from werkzeug.utils import secure_filename
 
@@ -67,8 +69,8 @@ def manage_issues():
     if specific_function_filter:
         filtered_issues = [issue for issue in filtered_issues if issue.specific_function == specific_function_filter]
     
-    # 数据倒序显示（按创建时间倒序）
-    filtered_issues.sort(key=lambda x: x.create_time or '', reverse=True)
+    # 数据倒序显示（按issue_id降序）
+    filtered_issues.sort(key=lambda x: int(x.issue_id) if x.issue_id and x.issue_id.isdigit() else 0, reverse=True)
     
     # 分页处理 - 固定每页20条记录
     page = request.args.get('page', 1, type=int)
@@ -244,8 +246,14 @@ def import_csv():
             issue_manager = current_app.issue_manager
             category_manager = current_app.category_manager
             
-            # 使用 MockEmailNotifier 进行测试（实际部署时可替换为真实的 EmailNotifier）
-            email_notifier = MockEmailNotifier()
+            # 使用真实的 EmailNotifier
+            email_notifier = EmailNotifier(
+                smtp_server=current_app.config['SMTP_SERVER'],
+                smtp_port=current_app.config['SMTP_PORT'],
+                username=current_app.config['SMTP_USERNAME'],
+                password=current_app.config['SMTP_PASSWORD'],
+                use_tls=current_app.config['SMTP_USE_TLS']
+            )
             
             import_result = CsvImporter.import_from_directvoice_format(
                 csv_content, issue_manager, category_manager, email_notifier, batch_id=datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -287,14 +295,6 @@ def import_csv():
             return redirect(request.url)
     return render_template('admin/import_csv.html', title='导入 CSV')
 
-@bp.route('/config', methods=['GET', 'POST'])
-@admin_required
-def configure_settings():
-    if request.method == 'POST':
-        flash('配置已成功保存！(实际保存逻辑待实现)', 'success')
-        return redirect(url_for('admin.configure_settings'))
-    return render_template('admin/config.html', title='参数配置')
-
 @bp.route('/issues/<issue_id>/notify', methods=['POST'])
 @admin_required
 def notify_issue(issue_id):
@@ -304,6 +304,8 @@ def notify_issue(issue_id):
     
     issue = issue_manager.get_item_by_id(issue_id, 'issue_id')
     if not issue:
+        if request.headers.get('Content-Type') == 'application/json':
+            return jsonify({'success': False, 'error': '问题未找到'}), 404
         flash('问题未找到。', 'danger')
         return redirect(url_for('admin.manage_issues'))
     
@@ -316,7 +318,10 @@ def notify_issue(issue_id):
             break
     
     if not category or not category.email_list:
-        flash(f'未找到"{issue.specific_function}"的邮箱配置。', 'warning')
+        error_msg = f'未找到"{issue.specific_function}"的邮箱配置。'
+        if request.headers.get('Content-Type') == 'application/json':
+            return jsonify({'success': False, 'error': error_msg}), 400
+        flash(error_msg, 'warning')
         return redirect(url_for('admin.manage_issues'))
     
     # 获取邮箱列表
@@ -324,12 +329,20 @@ def notify_issue(issue_id):
     emails = [email.strip() for email in emails if email.strip()]
     
     if not emails:
-        flash(f'"{issue.specific_function}"没有配置有效的邮箱地址。', 'warning')
+        error_msg = f'"{issue.specific_function}"没有配置有效的邮箱地址。'
+        if request.headers.get('Content-Type') == 'application/json':
+            return jsonify({'success': False, 'error': error_msg}), 400
+        flash(error_msg, 'warning')
         return redirect(url_for('admin.manage_issues'))
     
-    # 使用 MockEmailNotifier 发送通知
-    email_notifier = MockEmailNotifier()
-    email_notifier.clear_sent_emails()
+    # 使用真实的 EmailNotifier
+    email_notifier = EmailNotifier(
+        smtp_server=current_app.config['SMTP_SERVER'],
+        smtp_port=current_app.config['SMTP_PORT'],
+        username=current_app.config['SMTP_USERNAME'],
+        password=current_app.config['SMTP_PASSWORD'],
+        use_tls=current_app.config['SMTP_USE_TLS']
+    )
     
     # 转换问题为字典格式
     issue_dict = issue.to_dict()
@@ -344,8 +357,181 @@ def notify_issue(issue_id):
         issue.notified = 1
         issue_manager.update_item(issue.issue_id, issue, 'issue_id')
         
-        flash(f'通知邮件已发送给 {len(emails)} 个邮箱地址。', 'success')
+        success_msg = f'通知邮件已发送给 {len(emails)} 个邮箱地址。'
+        if request.headers.get('Content-Type') == 'application/json':
+            return jsonify({'success': True, 'message': success_msg})
+        flash(success_msg, 'success')
     else:
-        flash('发送通知邮件失败。', 'danger')
+        error_msg = '发送通知邮件失败。'
+        if request.headers.get('Content-Type') == 'application/json':
+            return jsonify({'success': False, 'error': error_msg}), 500
+        flash(error_msg, 'danger')
     
-    return redirect(url_for('admin.manage_issues')) 
+    if request.headers.get('Content-Type') == 'application/json':
+        return jsonify({'success': True, 'redirect': url_for('admin.manage_issues')})
+    return redirect(url_for('admin.manage_issues'))
+
+@bp.route('/email_config', methods=['GET', 'POST'])
+@admin_required
+def email_config():
+    """邮件配置管理页面"""
+    config_manager = ConfigManager()
+    
+    if request.method == 'POST':
+        try:
+            # 获取表单数据
+            smtp_server = request.form.get('smtp_server')
+            smtp_port = int(request.form.get('smtp_port'))
+            smtp_username = request.form.get('smtp_username')
+            smtp_password = request.form.get('smtp_password')
+            email_from = request.form.get('email_from')
+            email_from_name = request.form.get('email_from_name')
+            smtp_use_tls = 'smtp_use_tls' in request.form
+            
+            # 验证必填字段
+            if not all([smtp_server, smtp_port, smtp_username, smtp_password, email_from, email_from_name]):
+                flash('请填写所有必填字段。', 'danger')
+                return redirect(request.url)
+            
+            # 保存配置
+            config_data = {
+                'SMTP_SERVER': smtp_server,
+                'SMTP_PORT': smtp_port,
+                'SMTP_USERNAME': smtp_username,
+                'SMTP_PASSWORD': smtp_password,
+                'EMAIL_FROM': email_from,
+                'EMAIL_FROM_NAME': email_from_name,
+                'SMTP_USE_TLS': smtp_use_tls
+            }
+            
+            if config_manager.save_email_config(config_data):
+                flash('邮件配置已保存！', 'success')
+            else:
+                flash('保存配置失败，请检查文件权限。', 'danger')
+            
+            return redirect(url_for('admin.email_config'))
+            
+        except Exception as e:
+            flash(f'保存配置时发生错误: {str(e)}', 'danger')
+            return redirect(request.url)
+    
+    # GET请求：显示当前配置
+    config = config_manager.load_email_config()
+    
+    return render_template('admin/email_config.html', title='邮件配置管理', config=config)
+
+@bp.route('/test_email_config', methods=['POST'])
+@admin_required
+def test_email_config():
+    """测试邮件配置"""
+    try:
+        # 获取表单数据
+        smtp_server = request.form.get('smtp_server')
+        smtp_port = int(request.form.get('smtp_port'))
+        smtp_username = request.form.get('smtp_username')
+        smtp_password = request.form.get('smtp_password')
+        email_from = request.form.get('email_from')
+        email_from_name = request.form.get('email_from_name')
+        smtp_use_tls = 'smtp_use_tls' in request.form
+        
+        # 验证必填字段
+        if not all([smtp_server, smtp_port, smtp_username, smtp_password, email_from]):
+            return jsonify({'success': False, 'error': '请填写所有必填字段'})
+        
+        # 创建邮件通知器
+        email_notifier = EmailNotifier(
+            smtp_server=smtp_server,
+            smtp_port=smtp_port,
+            username=smtp_username,
+            password=smtp_password,
+            use_tls=smtp_use_tls
+        )
+        
+        # 创建测试邮件数据
+        test_issues = [{
+            'global_id': 999,
+            'carline': 'Test Car',
+            'function_domain': 'Test Domain',
+            'issue_type': 'Test Issue',
+            'brief_issue_en': 'This is a test email from AnswerCustomer system',
+            'create_time': datetime.now().strftime('%Y-%m-%d'),
+            'status': 'New'
+        }]
+        
+        # 发送测试邮件
+        success = email_notifier.send_issue_notification(
+            [smtp_username],  # 发送到配置的邮箱
+            'Test Function',
+            test_issues,
+            f"Test_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        )
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'test_email': smtp_username,
+                'message': '测试邮件发送成功'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': '邮件发送失败，请检查配置'
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'测试过程中发生错误: {str(e)}'
+        })
+
+@bp.route('/issues/<issue_id>/check_email_config', methods=['GET'])
+@admin_required
+def check_issue_email_config(issue_id):
+    """检查问题的邮箱配置"""
+    issue_manager = current_app.issue_manager
+    category_manager = current_app.category_manager
+    
+    issue = issue_manager.get_item_by_id(issue_id, 'issue_id')
+    if not issue:
+        return jsonify({'success': False, 'error': '问题未找到'})
+    
+    # 查找对应的分类配置
+    all_categories = category_manager.read_all()
+    category = None
+    for cat in all_categories:
+        if cat.specific_function == issue.specific_function:
+            category = cat
+            break
+    
+    if not category:
+        return jsonify({
+            'success': False, 
+            'error': f'未找到"{issue.specific_function}"的邮箱配置',
+            'has_config': False
+        })
+    
+    if not category.email_list:
+        return jsonify({
+            'success': False, 
+            'error': f'"{issue.specific_function}"没有配置邮箱地址',
+            'has_config': False
+        })
+    
+    # 获取邮箱列表
+    emails = category.email_list.split(',') if category.email_list else []
+    emails = [email.strip() for email in emails if email.strip()]
+    
+    if not emails:
+        return jsonify({
+            'success': False, 
+            'error': f'"{issue.specific_function}"没有配置有效的邮箱地址',
+            'has_config': False
+        })
+    
+    return jsonify({
+        'success': True,
+        'has_config': True,
+        'emails': emails,
+        'specific_function': issue.specific_function,
+        'message': f'找到 {len(emails)} 个邮箱地址'
+    }) 

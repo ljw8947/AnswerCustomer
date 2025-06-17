@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>邮件配置管理</h1>
+                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">返回仪表盘</a>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">SMTP服务器配置</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('admin.email_config') }}">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="smtp_server">SMTP服务器地址</label>
+                                        <input type="text" class="form-control" id="smtp_server" name="smtp_server" 
+                                               value="{{ config.SMTP_SERVER }}" required>
+                                        <small class="form-text text-muted">例如：smtp.gmail.com, smtp.qq.com</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="smtp_port">SMTP端口</label>
+                                        <input type="number" class="form-control" id="smtp_port" name="smtp_port" 
+                                               value="{{ config.SMTP_PORT }}" required>
+                                        <small class="form-text text-muted">常用端口：587(TLS), 465(SSL), 25</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="smtp_username">邮箱用户名</label>
+                                        <input type="email" class="form-control" id="smtp_username" name="smtp_username" 
+                                               value="{{ config.SMTP_USERNAME }}" required>
+                                        <small class="form-text text-muted">完整的邮箱地址</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="smtp_password">邮箱密码</label>
+                                        <input type="password" class="form-control" id="smtp_password" name="smtp_password" 
+                                               value="{{ config.SMTP_PASSWORD }}" required>
+                                        <small class="form-text text-muted">应用专用密码或授权码</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email_from">发件人邮箱</label>
+                                        <input type="email" class="form-control" id="email_from" name="email_from" 
+                                               value="{{ config.EMAIL_FROM }}" required>
+                                        <small class="form-text text-muted">显示在邮件中的发件人地址</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="email_from_name">发件人名称</label>
+                                        <input type="text" class="form-control" id="email_from_name" name="email_from_name" 
+                                               value="{{ config.EMAIL_FROM_NAME }}" required>
+                                        <small class="form-text text-muted">显示在邮件中的发件人名称</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="smtp_use_tls" name="smtp_use_tls" 
+                                           {% if config.SMTP_USE_TLS %}checked{% endif %}>
+                                    <label class="custom-control-label" for="smtp_use_tls">使用TLS加密</label>
+                                    <small class="form-text text-muted d-block">建议开启，提高邮件传输安全性</small>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">保存配置</button>
+                                <button type="button" class="btn btn-success ml-2" onclick="testEmailConfig()">测试配置</button>
+                                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary ml-2">取消</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 常用配置示例 -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">常用邮件服务商配置示例</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h6>163邮箱 (推荐)</h6>
+                                <ul class="list-unstyled small">
+                                    <li>服务器：smtp.163.com</li>
+                                    <li>端口：25</li>
+                                    <li>TLS：关闭</li>
+                                    <li>密码：授权码</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>Gmail</h6>
+                                <ul class="list-unstyled small">
+                                    <li>服务器：smtp.gmail.com</li>
+                                    <li>端口：587</li>
+                                    <li>TLS：开启</li>
+                                    <li>密码：应用专用密码</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>QQ邮箱</h6>
+                                <ul class="list-unstyled small">
+                                    <li>服务器：smtp.qq.com</li>
+                                    <li>端口：587</li>
+                                    <li>TLS：开启</li>
+                                    <li>密码：授权码</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 测试结果 -->
+                <div id="testResult" class="mt-4" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">测试结果</h5>
+                        </div>
+                        <div class="card-body" id="testResultContent">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function testEmailConfig() {
+            const testResult = document.getElementById('testResult');
+            const testResultContent = document.getElementById('testResultContent');
+            
+            // 显示加载状态
+            testResult.style.display = 'block';
+            testResultContent.innerHTML = '<div class="text-center">正在测试邮件配置...</div>';
+            
+            // 获取表单数据
+            const formData = new FormData(document.querySelector('form'));
+            
+            // 发送测试请求
+            fetch('{{ url_for("admin.test_email_config") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    testResultContent.innerHTML = `
+                        <div class="alert alert-success">
+                            配置测试成功！
+                            <br>邮件已发送到测试邮箱：${data.test_email}
+                        </div>
+                    `;
+                } else {
+                    testResultContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            配置测试失败！
+                            <br>错误信息：${data.error}
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                testResultContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        测试请求失败！
+                        <br>错误信息：${error.message}
+                    </div>
+                `;
+            });
+        }
+    </script>
+{% endblock %} 

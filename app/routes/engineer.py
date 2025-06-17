@@ -60,8 +60,8 @@ def issues():
     if specific_function_filter:
         filtered_issues = [issue for issue in filtered_issues if issue.specific_function == specific_function_filter]
     
-    # 数据倒序显示（按创建时间倒序）
-    filtered_issues.sort(key=lambda x: x.create_time or '', reverse=True)
+    # 数据倒序显示（按issue_id降序）
+    filtered_issues.sort(key=lambda x: int(x.issue_id) if x.issue_id and x.issue_id.isdigit() else 0, reverse=True)
     
     # 分页处理 - 固定每页20条记录
     page = request.args.get('page', 1, type=int)

@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from markupsafe import Markup
 from app.utils.csv_manager import CsvManager
+from app.utils.config_manager import ConfigManager
 from app.models.user import User
 from app.models.issue import Issue
 from app.models.comment import Comment
@@ -32,6 +33,14 @@ def nl2br(value):
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # 加载邮件配置
+    config_manager = ConfigManager()
+    email_config = config_manager.load_email_config()
+    
+    # 将邮件配置添加到app.config中
+    for key, value in email_config.items():
+        app.config[key] = value
 
     # 注册自定义过滤器
     app.jinja_env.filters['nl2br'] = nl2br

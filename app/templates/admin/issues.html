@@ -1,6 +1,77 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    <style>
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal.show {
+            display: block;
+        }
+        
+        .modal-dialog {
+            position: relative;
+            width: auto;
+            margin: 1.75rem auto;
+            max-width: 500px;
+        }
+        
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            border: 1px solid rgba(0,0,0,.2);
+            border-radius: .3rem;
+            box-shadow: 0 .5rem 1rem rgba(0,0,0,.15);
+        }
+        
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .modal-body {
+            position: relative;
+            padding: 1rem;
+        }
+        
+        .modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 1rem;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .close {
+            float: right;
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #000;
+            text-shadow: 0 1px 0 #fff;
+            opacity: .5;
+            background: none;
+            border: 0;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            opacity: .75;
+        }
+    </style>
+
     <h1 class="mb-4">问题管理</h1>
 
     <div class="mb-3">
@@ -113,13 +184,11 @@
                     </td>
                     <td>
                         <a href="{{ url_for('admin.issue_detail', issue_id=issue.issue_id) }}" class="btn btn-sm btn-info">Detail</a>
-                        <form method="post" action="{{ url_for('admin.notify_issue', issue_id=issue.issue_id) }}" style="display: inline;">
-                            <button type="submit" class="btn btn-sm btn-warning" 
-                                    onclick="return confirm('确定要发送通知邮件吗？')" 
-                                    {{ 'disabled' if issue.notified == 1 else '' }}>
-                                {{ '已通知' if issue.notified == 1 else '通知' }}
-                            </button>
-                        </form>
+                        <button type="button" class="btn btn-sm btn-warning" 
+                                onclick="checkEmailConfig('{{ issue.issue_id }}', '{{ issue.specific_function }}')"
+                                {{ 'disabled' if issue.notified == 1 else '' }}>
+                            {{ '已通知' if issue.notified == 1 else '通知' }}
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -170,4 +239,155 @@
         没有找到符合筛选条件的问题。您可以点击上方的"导入 CSV"按钮来批量导入问题数据。
     </div>
     {% endif %}
+
+    <!-- 邮箱配置检查模态框 -->
+    <div class="modal fade" id="emailConfigModal" tabindex="-1" role="dialog" aria-labelledby="emailConfigModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emailConfigModalLabel">邮箱配置检查</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="emailConfigModalBody">
+                    <!-- 内容将通过JavaScript动态填充 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="sendNotificationBtn" style="display: none;">发送通知</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentIssueId = null;
+        
+        function checkEmailConfig(issueId, specificFunction) {
+            currentIssueId = issueId;
+            
+            // 显示加载状态
+            document.getElementById('emailConfigModalBody').innerHTML = '<div class="text-center">正在检查邮箱配置...</div>';
+            document.getElementById('emailConfigModal').classList.add('show');
+            document.getElementById('emailConfigModal').style.display = 'block';
+            
+            // 发送AJAX请求检查邮箱配置
+            fetch(`/admin/issues/${issueId}/check_email_config`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.has_config) {
+                        // 有邮箱配置，显示邮箱列表
+                        showEmailList(data);
+                    } else {
+                        // 没有邮箱配置，显示错误信息
+                        showNoEmailConfig(data.error);
+                    }
+                })
+                .catch(error => {
+                    showNoEmailConfig('检查邮箱配置时发生错误: ' + error.message);
+                });
+        }
+        
+        function showEmailList(data) {
+            const emailList = data.emails.map(email => `<li>${email}</li>`).join('');
+            const modalContent = `
+                <div class="alert alert-success">
+                    <h6>✓ 邮箱配置正常</h6>
+                    <p>${data.message}</p>
+                </div>
+                <div>
+                    <h6>Specific Function: ${data.specific_function}</h6>
+                    <p>配置的邮箱地址:</p>
+                    <ul class="list-group">
+                        ${emailList}
+                    </ul>
+                </div>
+                <div class="alert alert-info mt-3">
+                    <small>点击"发送通知"按钮将向以上邮箱发送问题通知邮件。</small>
+                </div>
+            `;
+            
+            document.getElementById('emailConfigModalBody').innerHTML = modalContent;
+            document.getElementById('sendNotificationBtn').style.display = 'inline-block';
+        }
+        
+        function showNoEmailConfig(errorMessage) {
+            const modalContent = `
+                <div class="alert alert-warning">
+                    <h6>⚠️ 邮箱配置缺失</h6>
+                    <p>${errorMessage}</p>
+                </div>
+                <div class="alert alert-info">
+                    <h6>解决方案:</h6>
+                    <ol>
+                        <li>进入 <a href="/admin/categories" target="_blank">Specific Function管理</a> 页面</li>
+                        <li>找到对应的Specific Function</li>
+                        <li>点击"编辑"按钮</li>
+                        <li>在邮箱列表中配置邮箱地址</li>
+                        <li>保存配置后重新尝试发送通知</li>
+                    </ol>
+                </div>
+            `;
+            
+            document.getElementById('emailConfigModalBody').innerHTML = modalContent;
+            document.getElementById('sendNotificationBtn').style.display = 'none';
+        }
+        
+        // 页面加载完成后绑定事件
+        document.addEventListener('DOMContentLoaded', function() {
+            // 发送通知按钮点击事件
+            document.getElementById('sendNotificationBtn').addEventListener('click', function() {
+                if (!currentIssueId) return;
+                
+                // 显示确认对话框
+                if (confirm('确定要发送通知邮件吗？')) {
+                    // 显示发送中状态
+                    this.disabled = true;
+                    this.textContent = '发送中...';
+                    
+                    // 发送POST请求到通知接口
+                    fetch(`/admin/issues/${currentIssueId}/notify`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // 刷新页面以更新通知状态
+                            location.reload();
+                        } else {
+                            alert('发送通知失败，请重试');
+                            // 恢复按钮状态
+                            this.disabled = false;
+                            this.textContent = '发送通知';
+                        }
+                    })
+                    .catch(error => {
+                        alert('发送通知时发生错误: ' + error.message);
+                        // 恢复按钮状态
+                        this.disabled = false;
+                        this.textContent = '发送通知';
+                    });
+                }
+            });
+            
+            // 关闭模态框事件
+            document.querySelectorAll('[data-dismiss="modal"]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    document.getElementById('emailConfigModal').classList.remove('show');
+                    document.getElementById('emailConfigModal').style.display = 'none';
+                });
+            });
+            
+            // 点击模态框背景关闭
+            document.getElementById('emailConfigModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                    this.style.display = 'none';
+                }
+            });
+        });
+    </script>
 {% endblock %} 

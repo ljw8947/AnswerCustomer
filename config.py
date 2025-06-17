@@ -8,6 +8,18 @@ class Config:
     COMMENTS_CSV = os.path.join(DATA_DIR, 'comments.csv')
     CATEGORY_CSV = os.path.join(DATA_DIR, 'category.csv')
 
+    # Email Configuration
+    # 邮件服务器配置
+    SMTP_SERVER = os.environ.get('SMTP_SERVER') or 'smtp.163.com'  # 163邮箱SMTP服务器
+    SMTP_PORT = int(os.environ.get('SMTP_PORT') or 25)  # 163邮箱端口
+    SMTP_USERNAME = os.environ.get('SMTP_USERNAME') or 'your-email@163.com'
+    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD') or 'your-authorization-code'  # 163邮箱授权码
+    SMTP_USE_TLS = os.environ.get('SMTP_USE_TLS', 'false').lower() == 'true'  # 163邮箱不使用TLS
+    
+    # 发件人信息
+    EMAIL_FROM = os.environ.get('EMAIL_FROM') or SMTP_USERNAME
+    EMAIL_FROM_NAME = os.environ.get('EMAIL_FROM_NAME') or 'AnswerCustomer System'
+
     # Common Mercedes-Benz Car Models
     MERCEDES_CARLINES = [
         'A-Class', 'C-Class', 'E-Class', 'S-Class',
