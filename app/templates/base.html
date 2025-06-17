@@ -18,7 +18,7 @@
                 <ul class="navbar-nav ml-auto">
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('user.dashboard') }}">{{ current_user.username }}</a>
+                            <span class="navbar-text text-light mr-3">{{ current_user.username }}</span>
                         </li>
                         {% if current_user.role == 'admin' %}
                         <li class="nav-item">
@@ -38,7 +38,7 @@
                             <a class="nav-link" href="{{ url_for('auth.login') }}">登录</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.register') }}">注册</a>
+                            <a class="nav-link" href="{{ url_for('auth.register_engineer') }}">工程师注册</a>
                         </li>
                     {% endif %}
                 </ul>

@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, current_user, login_required
 from app.models.user import User
-from flask import current_app # Import current_app
-from app.extensions import bcrypt  # 从 extensions.py 导入 bcrypt
+from flask import current_app
+from app import bcrypt
 import re
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -28,13 +28,11 @@ def validate_username(username):
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        # If user is already logged in, redirect based on role
+        # 如果用户已登录，根据角色重定向
         if current_user.role == 'admin':
             return redirect(url_for('admin.dashboard'))
         elif current_user.role == 'engineer':
             return redirect(url_for('engineer.dashboard'))
-        else:
-            return redirect(url_for('user.my_issues'))
 
     if request.method == 'POST':
         username = request.form.get('username')
@@ -55,73 +53,15 @@ def login():
             login_user(user, remember=remember)
             flash('登录成功！', 'success')
             
-            # Redirect based on user role
+            # 根据用户角色重定向
             if user.role == 'admin':
                 return redirect(url_for('admin.dashboard'))
             elif user.role == 'engineer':
                 return redirect(url_for('engineer.dashboard'))
-            else:
-                return redirect(url_for('user.my_issues'))
         else:
             flash('用户名或密码错误。', 'danger')
 
     return render_template('auth/login.html', title='登录')
-
-@bp.route('/register')
-def register():
-    """重定向到顾客注册页面"""
-    return redirect(url_for('auth.register_customer'))
-
-@bp.route('/register/customer', methods=['GET', 'POST'])
-def register_customer():
-    if current_user.is_authenticated:
-        if current_user.role == 'admin':
-            return redirect(url_for('admin.dashboard'))
-        elif current_user.role == 'engineer':
-            return redirect(url_for('engineer.dashboard'))
-        else:
-            return redirect(url_for('user.my_issues'))
-
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-
-        # 验证用户名格式
-        is_valid_username, username_msg = validate_username(username)
-        if not is_valid_username:
-            flash(username_msg, 'danger')
-            return redirect(url_for('auth.register_customer'))
-
-        # 验证密码强度
-        is_valid_password, password_msg = validate_password(password)
-        if not is_valid_password:
-            flash(password_msg, 'danger')
-            return redirect(url_for('auth.register_customer'))
-
-        if password != confirm_password:
-            flash('两次输入的密码不匹配。', 'danger')
-            return redirect(url_for('auth.register_customer'))
-
-        user_manager = current_app.user_manager
-        existing_user = user_manager.get_item_by_id(username, 'username')
-        if existing_user:
-            flash('用户名已存在。', 'danger')
-            return redirect(url_for('auth.register_customer'))
-
-        new_user = User(
-            username=username,
-            email=email,
-            password_hash=bcrypt.generate_password_hash(password).decode('utf-8'),
-            role='user',  # 顾客角色
-            status='active'  # 默认状态为激活
-        )
-        user_manager.add_item(new_user)
-        flash('注册成功！请登录。', 'success')
-        return redirect(url_for('auth.login'))
-
-    return render_template('auth/register_customer.html', title='顾客注册')
 
 @bp.route('/register/engineer', methods=['GET', 'POST'])
 def register_engineer():
@@ -130,8 +70,6 @@ def register_engineer():
             return redirect(url_for('admin.dashboard'))
         elif current_user.role == 'engineer':
             return redirect(url_for('engineer.dashboard'))
-        else:
-            return redirect(url_for('user.my_issues'))
 
     if request.method == 'POST':
         username = request.form.get('username')
@@ -156,7 +94,6 @@ def register_engineer():
             flash('两次输入的密码不匹配。', 'danger')
             return redirect(url_for('auth.register_engineer'))
 
-        # TODO: 验证工号的有效性（可以添加工号验证逻辑）
         if not employee_id:
             flash('请输入工号。', 'danger')
             return redirect(url_for('auth.register_engineer'))
@@ -172,9 +109,8 @@ def register_engineer():
             username=username,
             email=email,
             password_hash=bcrypt.generate_password_hash(password).decode('utf-8'),
-            role='engineer',  # 工程师角色
-            status='pending',  # 状态为待审核
-            employee_id=employee_id  # 存储工号
+            role='engineer',
+            status='pending'
         )
         user_manager.add_item(new_user)
         flash('注册申请已提交，请等待管理员审核。', 'success')

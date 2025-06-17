@@ -16,12 +16,11 @@ class CsvManager:
                 # Write header row based on model_class's expected attributes
                 if hasattr(self.model_class, 'to_dict'):
                     # Create a dummy instance to get attribute names, or assume a fixed header
-                    # For simplicity, we'll assume the __init__ parameters define the header
                     # A more robust solution might require a defined HEADERS class attribute in models
                     if self.model_class.__name__ == "Issue":
-                        writer.writerow(['issue_id', 'create', 'carline', 'specific_function', 'general', 'issue_type', 'description', 'brief_issue', 'global_id', 'user_issue_id', 'created_by_user_id', 'status', 'assigned_to_user_id', 'extra_info'])
+                        writer.writerow(['issue_id', 'create_time', 'carline', 'power', 'specific_function', 'function_domain', 'general_domain', 'issue_type', 'description', 'description_en', 'brief_issue', 'brief_issue_en', 'global_id', 'user_issue_id', 'created_by_user_id', 'status', 'assigned_to_user_id', 'extra_info', 'notified'])
                     elif self.model_class.__name__ == "User":
-                        writer.writerow(['user_id', 'username', 'email', 'password_hash', 'role', 'status', 'avatar_url'])
+                        writer.writerow(['username', 'email', 'password_hash', 'role', 'status', 'user_id'])
 
     def read_all(self):
         data = []
