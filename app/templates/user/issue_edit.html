@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="mb-4">编辑问题 (ID: #{{ issue.user_issue_id }})</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">编辑问题详情</div>
+                <div class="card-body">
+                    <form action="{{ url_for('user.issue_edit', issue_id=issue.issue_id) }}" method="post">
+                        <div class="form-group">
+                            <label for="brief_issue">简要问题 (标题)</label>
+                            <input type="text" class="form-control" id="brief_issue" name="brief_issue" value="{{ issue.brief_issue }}" required maxlength="100">
+                            <small class="form-text text-muted">问题的简要描述，最多100个字符。</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">详细描述</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" required maxlength="500">{{ issue.description }}</textarea>
+                            <small class="form-text text-muted">请详细描述您遇到的问题，最多500个字符。</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="carline">车型</label>
+                            <select class="form-control" id="carline" name="carline" required>
+                                <option value="">选择车型</option>
+                                {% for carline in carlines %}
+                                <option value="{{ carline }}" {% if issue.carline == carline %}selected{% endif %}>{{ carline }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="specific_function">具体功能</label>
+                            <input type="text" class="form-control" id="specific_function" name="specific_function" value="{{ issue.specific_function or '' }}" placeholder="例如：远程空调控制">
+                        </div>
+                        <div class="form-group">
+                            <label for="general">总体类别</label>
+                            <select class="form-control" id="general" name="general" required>
+                                <option value="">选择总体类别</option>
+                                <option value="Software" {% if issue.general == 'Software' %}selected{% endif %}>软件</option>
+                                <option value="Hardware" {% if issue.general == 'Hardware' %}selected{% endif %}>硬件</option>
+                                <option value="Service" {% if issue.general == 'Service' %}selected{% endif %}>服务</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="issue_type">问题类型</label>
+                            <select class="form-control" id="issue_type" name="issue_type" required>
+                                <option value="">选择问题类型</option>
+                                <option value="New Requirement" {% if issue.issue_type == 'New Requirement' %}selected{% endif %}>新需求</option>
+                                <option value="Defect" {% if issue.issue_type == 'Defect' %}selected{% endif %}>缺陷</option>
+                                <option value="Support Inquiry" {% if issue.issue_type == 'Support Inquiry' %}selected{% endif %}>支持请求</option>
+                                <option value="Question" {% if issue.issue_type == 'Question' %}selected{% endif %}>疑问</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                        <a href="{{ url_for('user.issue_detail', issue_id=issue.issue_id) }}" class="btn btn-secondary">取消</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

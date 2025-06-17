@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{# Macro to render assigned user (or fallback) without using current_app #}
+{% macro render_assigned_user(assigned_to_user_id) %}
+    {% if assigned_to_user_id %}
+        {% if assigned_to_user_id == 'admin' %}
+            admin
+        {% elif assigned_to_user_id == 'Engineer1' %}
+            Engineer1
+        {% else %}
+            未知
+        {% endif %}
+    {% else %}
+        未指派
+    {% endif %}
+{% endmacro %}
+
+{% block content %}
+    <h1 class="mb-4">工程师问题列表</h1>
+
+    <div class="alert alert-info" role="alert">
+        此处将展示所有问题，工程师可以查看详情、处理问题。
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>全球ID</th>
+                <th>创建日期</th>
+                <th>简要问题</th>
+                <th>状态</th>
+                <th>指派给</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for issue in issues %}
+            <tr>
+                <td>{{ issue.global_id }}</td>
+                <td>{{ issue.create }}</td>
+                <td>{{ issue.brief_issue }}</td>
+                <td><span class="badge badge-{{ 'success' if issue.status == 'Resolved' else ('primary' if issue.status == 'Assigned' else ('warning' if issue.status == 'In Progress' else 'secondary')) }}">{{ issue.status }}</span></td>
+                <td>
+                    {{ render_assigned_user(issue.assigned_to_user_id) }}
+                </td>
+                <td>
+                    <a href="{{ url_for('engineer.issue_detail_engineer', issue_id=issue.issue_id) }}" class="btn btn-sm btn-info">查看详情</a>
+                    <a href="{{ url_for('engineer.process_issue', issue_id=issue.issue_id) }}" class="btn btn-sm btn-primary">处理问题</a>
+                    {# <a href="#" class="btn btn-sm btn-success">关注</a> #}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">没有找到问题。</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %} 

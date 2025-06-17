@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="jumbotron text-center">
+        <h1 class="display-4">欢迎来到 AnswerCustomer</h1>
+        <p class="lead">您的汽车问题解决方案中心。</p>
+        <hr class="my-4">
+        <p>在这里，您可以提交汽车相关问题，并由我们的专业工程师团队为您解答。</p>
+        <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register') }}" role="button">立即注册</a>
+        <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.login') }}" role="button">已有账号？登录</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <h2>提交问题</h2>
+            <p>轻松提交您的汽车问题，我们致力于为您提供及时、专业的帮助。</p>
+            <p><a class="btn btn-outline-primary" href="#" role="button">了解更多 &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>问题追踪</h2>
+            <p>实时跟踪您提交的问题状态，不错过任何更新。</p>
+            <p><a class="btn btn-outline-primary" href="#" role="button">了解更多 &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+            <h2>专家解答</h2>
+            <p>我们的专业工程师团队将为您的问题提供详细的解决方案。</p>
+            <p><a class="btn btn-outline-primary" href="#" role="button">了解更多 &raquo;</a></p>
+        </div>
+    </div>
+{% endblock %} 

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h1 class="display-4">欢迎，管理员！</h1>
+        <p class="lead">这是您的管理仪表盘，您可以在这里管理用户、问题和系统设置。</p>
+        <hr class="my-4">
+        <p>使用左侧的导航栏或下面的链接来执行管理任务。</p>
+        <p class="lead">
+            <a class="btn btn-primary btn-lg" href="{{ url_for('admin.manage_users') }}" role="button">管理用户</a>
+            <a class="btn btn-secondary btn-lg" href="{{ url_for('admin.manage_issues') }}" role="button">管理问题</a>
+            <a class="btn btn-info btn-lg" href="{{ url_for('admin.configure_settings') }}" role="button">参数配置</a>
+        </p>
+    </div>
+{% endblock %} 

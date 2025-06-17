@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="mb-4">参数配置</h1>
+
+    <div class="alert alert-info" role="alert">
+        此处将用于配置问题类型、输入内容长度等系统参数。
+    </div>
+
+    <form action="#" method="post">
+        <div class="form-group">
+            <label for="issueTypes">问题类型 (每行一个)</label>
+            <textarea class="form-control" id="issueTypes" rows="5" placeholder="例如：
+Bug
+Feature Request
+Support Inquiry"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="maxDescriptionLength">问题描述最大长度</label>
+            <input type="number" class="form-control" id="maxDescriptionLength" value="500">
+        </div>
+        <div class="form-group">
+            <label for="maxTitleLength">问题标题最大长度</label>
+            <input type="number" class="form-control" id="maxTitleLength" value="100">
+        </div>
+        <button type="submit" class="btn btn-primary">保存配置</button>
+    </form>
+{% endblock %} 

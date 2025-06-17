@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{# Macro to render assigned user (or fallback) without using current_app #}
+{% macro render_assigned_user(assigned_to_user_id) %}
+    {% if assigned_to_user_id %}
+        {% if assigned_to_user_id == 'admin' %}
+            admin
+        {% elif assigned_to_user_id == 'Engineer1' %}
+            Engineer1
+        {% else %}
+            未知
+        {% endif %}
+    {% else %}
+        未指派
+    {% endif %}
+{% endmacro %}
+
+{% block content %}
+    <h1 class="mb-4">问题详情</h1>
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">问题 #{{ issue.global_id }} ({{ issue.issue_id }})</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-2">创建日期</dt>
+                <dd class="col-sm-10">{{ issue.create }}</dd>
+                <dt class="col-sm-2">车型</dt>
+                <dd class="col-sm-10">{{ issue.carline }}</dd>
+                <dt class="col-sm-2">具体功能</dt>
+                <dd class="col-sm-10">{{ issue.specific_function }}</dd>
+                <dt class="col-sm-2">总体类别</dt>
+                <dd class="col-sm-10">{{ issue.general }}</dd>
+                <dt class="col-sm-2">问题类型</dt>
+                <dd class="col-sm-10">{{ issue.issue_type }}</dd>
+                <dt class="col-sm-2">详细描述</dt>
+                <dd class="col-sm-10">{{ issue.description }}</dd>
+                <dt class="col-sm-2">简要问题</dt>
+                <dd class="col-sm-10">{{ issue.brief_issue }}</dd>
+                <dt class="col-sm-2">状态</dt>
+                <dd class="col-sm-10"><span class="badge badge-{{ 'success' if issue.status == 'Resolved' else ('primary' if issue.status == 'Assigned' else ('warning' if issue.status == 'In Progress' else 'secondary')) }}">{{ issue.status }}</span></dd>
+                <dt class="col-sm-2">指派给</dt>
+                <dd class="col-sm-10">{{ render_assigned_user(issue.assigned_to_user_id) }}</dd>
+                <dt class="col-sm-2">额外信息</dt>
+                <dd class="col-sm-10">{{ issue.extra_info or '无' }}</dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('admin.manage_issues') }}" class="btn btn-secondary">返回列表</a>
+        </div>
+    </div>
+{% endblock %} 

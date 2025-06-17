@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="mb-4">处理问题 (全球ID: {{ issue.global_id }})</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">更新问题状态和信息</div>
+                <div class="card-body">
+                    <form action="{{ url_for('engineer.process_issue', issue_id=issue.issue_id) }}" method="post">
+                        <div class="form-group">
+                            <label for="status">当前状态</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="New" {% if issue.status == 'New' %}selected{% endif %}>新问题</option>
+                                <option value="Assigned" {% if issue.status == 'Assigned' %}selected{% endif %}>已指派</option>
+                                <option value="In Progress" {% if issue.status == 'In Progress' %}selected{% endif %}>处理中</option>
+                                <option value="Resolved" {% if issue.status == 'Resolved' %}selected{% endif %}>已解决</option>
+                                <option value="Closed" {% if issue.status == 'Closed' %}selected{% endif %}>已关闭</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-check">
+                            <input type="checkbox" class="form-check-input" id="assign_to_me" name="assign_to_me" {% if issue.assigned_to_user_id == current_user.get_id() %}checked{% endif %}>
+                            <label class="form-check-label" for="assign_to_me">指派给我</label>
+                            <small class="form-text text-muted">勾选此项可将问题指派给您。</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="extra_info">额外信息</label>
+                            <textarea class="form-control" id="extra_info" name="extra_info" rows="5" placeholder="在此处添加处理进度、解决方案等额外信息">{{ issue.extra_info or '' }}</textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                        <a href="{{ url_for('engineer.issue_detail_engineer', issue_id=issue.issue_id) }}" class="btn btn-secondary">取消</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 
