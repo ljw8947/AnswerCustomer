@@ -178,10 +178,10 @@ def process_issue(issue_id):
         
         if extra_info != old_extra_info:
             issue.extra_info = extra_info
-            if extra_info:
+            # 只有当新额外信息不为空时才记录变化
+            if extra_info and extra_info.strip():
                 changes.append(f"额外信息: {extra_info}")
-            else:
-                changes.append("额外信息: 已清空")
+            # 如果新额外信息为空，不记录任何变化
 
         # 更新问题
         issue_manager.update_item(issue.issue_id, issue, 'issue_id')

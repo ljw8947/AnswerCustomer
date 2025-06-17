@@ -186,8 +186,9 @@
                         <a href="{{ url_for('admin.issue_detail', issue_id=issue.issue_id) }}" class="btn btn-sm btn-info">Detail</a>
                         <button type="button" class="btn btn-sm btn-warning" 
                                 onclick="checkEmailConfig('{{ issue.issue_id }}', '{{ issue.specific_function }}')"
-                                {{ 'disabled' if issue.notified == 1 else '' }}>
-                            {{ '已通知' if issue.notified == 1 else '通知' }}
+                                data-issue-id="{{ issue.issue_id }}"
+                                data-notified="{{ issue.notified }}">
+                            {{ '重新通知' if issue.notified == 1 else '通知' }}
                         </button>
                     </td>
                 </tr>
@@ -353,19 +354,26 @@
                             'Content-Type': 'application/json',
                         }
                     })
-                    .then(response => {
-                        if (response.ok) {
-                            // 刷新页面以更新通知状态
-                            location.reload();
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // 发送成功，更新按钮状态和文本
+                            updateNotificationButton(currentIssueId, true);
+                            
+                            // 显示成功消息
+                            alert('通知邮件发送成功！');
+                            
+                            // 关闭模态框
+                            document.getElementById('emailConfigModal').classList.remove('show');
+                            document.getElementById('emailConfigModal').style.display = 'none';
                         } else {
-                            alert('发送通知失败，请重试');
-                            // 恢复按钮状态
-                            this.disabled = false;
-                            this.textContent = '发送通知';
+                            alert('发送通知失败: ' + (data.error || '未知错误'));
                         }
                     })
                     .catch(error => {
                         alert('发送通知时发生错误: ' + error.message);
+                    })
+                    .finally(() => {
                         // 恢复按钮状态
                         this.disabled = false;
                         this.textContent = '发送通知';
@@ -389,5 +397,25 @@
                 }
             });
         });
+        
+        // 更新通知按钮状态的函数
+        function updateNotificationButton(issueId, notified) {
+            const button = document.querySelector(`button[data-issue-id="${issueId}"]`);
+            if (button) {
+                button.textContent = notified ? '重新通知' : '通知';
+                button.setAttribute('data-notified', notified ? '1' : '0');
+                
+                // 更新对应的通知状态徽章
+                const row = button.closest('tr');
+                const notifiedCell = row.querySelector('td:nth-child(11)'); // 第11列是Notified状态
+                if (notifiedCell) {
+                    const badge = notifiedCell.querySelector('.badge');
+                    if (badge) {
+                        badge.textContent = notified ? '已通知' : '未通知';
+                        badge.className = `badge badge-${notified ? 'success' : 'secondary'}`;
+                    }
+                }
+            }
+        }
     </script>
 {% endblock %} 

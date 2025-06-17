@@ -74,8 +74,8 @@ class Issue:
             created_by_user_id=data.get('created_by_user_id'),
             status=data.get('status', 'New'),
             assigned_to_user_id=data.get('assigned_to_user_id'),
-            extra_info=data.get('extra_info'),
-            notified=data.get('notified', 0),
+            extra_info=data.get('extra_info') or None,  # 确保None值被正确处理
+            notified=safe_int(data.get('notified')) or 0,  # 使用safe_int确保正确转换
             batch=data.get('batch')
         )
 
