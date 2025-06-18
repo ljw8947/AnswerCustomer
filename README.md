@@ -123,14 +123,7 @@ python run.py
 
 本项目采用 MIT 协议 - 查看 [LICENSE](LICENSE) 文件了解详情
 
-## 👥 作者
 
-- **ljw8947** - 初始工作 - [GitHub](https://github.com/ljw8947)
-
-## 📞 联系方式
-
-- **项目链接**：[https://github.com/ljw8947/AnswerCustomer](https://github.com/ljw8947/AnswerCustomer)
-- **邮箱**：ljw8947@gmail.com
 
 ---
 
