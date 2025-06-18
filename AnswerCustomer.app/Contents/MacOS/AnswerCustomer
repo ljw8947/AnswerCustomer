@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# 获取应用程序包所在目录
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+cd "$APP_DIR"
+
+# 检查Python
+if ! command -v python3 &> /dev/null; then
+    osascript -e 'display dialog "Python3未安装，请先安装Python 3.7或更高版本" buttons {"确定"} default button "确定"'
+    exit 1
+fi
+
+# 运行初始化脚本
+python3 init_and_run.py
+
+# 如果启动失败，显示错误对话框
+if [ $? -ne 0 ]; then
+    osascript -e 'display dialog "启动失败，请检查错误信息" buttons {"确定"} default button "确定"'
+fi

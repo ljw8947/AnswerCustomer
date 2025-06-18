@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{# Macro to render assigned user (or fallback) without using current_app #}
+{% macro render_assigned_user(assigned_to_user_id) %}
+    {% if assigned_to_user_id %}
+        {% if assigned_to_user_id == 'admin' %}
+            admin
+        {% elif assigned_to_user_id == 'Engineer1' %}
+            Engineer1
+        {% else %}
+            未知
+        {% endif %}
+    {% else %}
+        未指派
+    {% endif %}
+{% endmacro %}
+
+{% block content %}
+    <h1 class="mb-4">问题详情</h1>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title">问题 #{{ issue.global_id }} ({{ issue.issue_id }})</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-2">创建日期</dt>
+                <dd class="col-sm-10">{{ issue.create_time }}</dd>
+
+                <dt class="col-sm-2">车型</dt>
+                <dd class="col-sm-10">{{ issue.carline }}</dd>
+
+                <dt class="col-sm-2">具体功能</dt>
+                <dd class="col-sm-10">{{ issue.specific_function }}</dd>
+
+                <dt class="col-sm-2">总体类别</dt>
+                <dd class="col-sm-10">{{ issue.general }}</dd>
+
+                <dt class="col-sm-2">问题类型</dt>
+                <dd class="col-sm-10">{{ issue.issue_type }}</dd>
+
+                <dt class="col-sm-2">详细描述</dt>
+                <dd class="col-sm-10">{{ issue.description }}</dd>
+
+                <dt class="col-sm-2">简要问题</dt>
+                <dd class="col-sm-10">{{ issue.brief_issue }}</dd>
+
+                <dt class="col-sm-2">状态</dt>
+                <dd class="col-sm-10"><span class="badge badge-{{ 'success' if issue.status == 'Resolved' else ('primary' if issue.status == 'Assigned' else ('warning' if issue.status == 'In Progress' else 'secondary')) }}">{{ issue.status }}</span></dd>
+
+                <dt class="col-sm-2">指派给</dt>
+                <dd class="col-sm-10">{{ render_assigned_user(issue.assigned_to_user_id) }}</dd>
+
+                <dt class="col-sm-2">额外信息</dt>
+                <dd class="col-sm-10">{{ issue.extra_info or '无' }}</dd>
+            </dl>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('engineer.issues') }}" class="btn btn-secondary">返回列表</a>
+            <a href="{{ url_for('engineer.process_issue', issue_id=issue.issue_id) }}" class="btn btn-primary">处理问题</a>
+        </div>
+    </div>
+
+    <!-- 评论区域 -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">评论 ({{ comments|length }})</h5>
+        </div>
+        <div class="card-body">
+            <!-- 添加评论表单 -->
+            <form action="{{ url_for('engineer.add_comment', issue_id=issue.issue_id) }}" method="post" class="mb-4">
+                <div class="form-group">
+                    <label for="content">添加评论</label>
+                    <textarea class="form-control" id="content" name="content" rows="3" placeholder="请输入您的评论..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">发表评论</button>
+            </form>
+
+            <!-- 评论列表 -->
+            {% if comments %}
+                <hr>
+                <div class="comments-list">
+                    {% for comment in comments %}
+                    <div class="comment-item border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <strong class="text-primary">{{ comment.username }}</strong>
+                                    <small class="text-muted ml-2">{{ comment.created_at }}</small>
+                                </div>
+                                <div class="comment-content">
+                                    {{ comment.content|nl2br }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center text-muted py-4">
+                    <p>暂无评论，成为第一个评论的人吧！</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %} 

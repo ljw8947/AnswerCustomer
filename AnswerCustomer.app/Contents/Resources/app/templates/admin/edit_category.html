@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">编辑 Specific Function</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <strong>Specific Function:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span class="badge badge-primary badge-lg">{{ category.specific_function }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <strong>Function Domain:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span class="badge badge-info">{{ category.function_domain }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <strong>General Domain:</strong>
+                        </div>
+                        <div class="col-md-8">
+                            <span class="badge badge-secondary">{{ category.general_domain }}</span>
+                        </div>
+                    </div>
+
+                    <form action="{{ url_for('admin.edit_category', category_id=category.category_id) }}" method="post">
+                        <div class="form-group">
+                            <label for="email_list">邮箱列表</label>
+                            <textarea class="form-control" id="email_list" name="email_list" rows="6" 
+                                      placeholder="请输入邮箱地址，多个邮箱用逗号分隔&#10;例如: engineer1@example.com, engineer2@example.com">{{ category.email_list }}</textarea>
+                            <small class="form-text text-muted">
+                                多个邮箱地址请用逗号分隔。系统会自动验证邮箱格式，无效的邮箱将被忽略。
+                            </small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">保存邮箱列表</button>
+                            <a href="{{ url_for('admin.manage_categories') }}" class="btn btn-secondary">取消</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

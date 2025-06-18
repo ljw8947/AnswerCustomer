@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{# Macro to render assigned user (or fallback) without using current_app #}
+{% macro render_assigned_user(assigned_to_user_id) %}
+    {% if assigned_to_user_id %}
+        {% if assigned_to_user_id == 'admin' %}
+            admin
+        {% elif assigned_to_user_id == 'Engineer1' %}
+            Engineer1
+        {% elif assigned_to_user_id == 'admin_import' %}
+            管理员导入
+        {% else %}
+            未知
+        {% endif %}
+    {% else %}
+        未指派
+    {% endif %}
+{% endmacro %}
+
+{% block content %}
+    <h1 class="mb-4">问题详情</h1>
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">问题 #{{ issue.global_id }} ({{ issue.issue_id }})</h5>
+            <h6 class="card-subtitle mb-2 text-muted">创建日期: {{ issue.create_time or issue.create or 'N/A' }}</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">车型</dt>
+                        <dd class="col-sm-8">{{ issue.carline or 'N/A' }}</dd>
+                        <dt class="col-sm-4">动力类型</dt>
+                        <dd class="col-sm-8">{{ issue.power or 'N/A' }}</dd>
+                        <dt class="col-sm-4">具体功能</dt>
+                        <dd class="col-sm-8">{{ issue.specific_function or 'N/A' }}</dd>
+                        <dt class="col-sm-4">功能域</dt>
+                        <dd class="col-sm-8">{{ issue.function_domain or 'N/A' }}</dd>
+                        <dt class="col-sm-4">通用域</dt>
+                        <dd class="col-sm-8">{{ issue.general_domain or 'N/A' }}</dd>
+                        <dt class="col-sm-4">问题类型</dt>
+                        <dd class="col-sm-8">{{ issue.issue_type or 'N/A' }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">状态</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge badge-{{ 'success' if issue.status == 'Resolved' else 'warning' if issue.status == 'In Progress' else 'info' if issue.status == 'Assigned' else 'secondary' }}">
+                                {{ issue.status or 'New' }}
+                            </span>
+                        </dd>
+                        <dt class="col-sm-4">指派给</dt>
+                        <dd class="col-sm-8">{{ render_assigned_user(issue.assigned_to_user_id) }}</dd>
+                        <dt class="col-sm-4">创建者</dt>
+                        <dd class="col-sm-8">{{ issue.created_by_user_id or 'N/A' }}</dd>
+                        <dt class="col-sm-4">用户问题ID</dt>
+                        <dd class="col-sm-8">{{ issue.user_issue_id or 'N/A' }}</dd>
+                        <dt class="col-sm-4">额外信息</dt>
+                        <dd class="col-sm-8">{{ issue.extra_info or '无' }}</dd>
+                    </dl>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>详细描述 (中文):</h6>
+                    <p class="card-text">{{ issue.description or 'N/A' }}</p>
+                </div>
+                {% if issue.description_en %}
+                <div class="col-md-6">
+                    <h6>详细描述 (英文):</h6>
+                    <p class="card-text">{{ issue.description_en }}</p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>简要问题 (中文):</h6>
+                    <p class="card-text">{{ issue.brief_issue or 'N/A' }}</p>
+                </div>
+                {% if issue.brief_issue_en %}
+                <div class="col-md-6">
+                    <h6>简要问题 (英文):</h6>
+                    <p class="card-text">{{ issue.brief_issue_en }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('admin.manage_issues') }}" class="btn btn-secondary">返回列表</a>
+        </div>
+    </div>
+{% endblock %} 

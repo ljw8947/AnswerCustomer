@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{# Macro to render assigned user (or fallback) without using current_app #}
+{% macro render_assigned_user(assigned_to_user_id) %}
+    {% if assigned_to_user_id %}
+        {% if assigned_to_user_id == 'admin' %}
+            admin
+        {% elif assigned_to_user_id == 'Engineer1' %}
+            Engineer1
+        {% else %}
+            未知
+        {% endif %}
+    {% else %}
+        未指派
+    {% endif %}
+{% endmacro %}
+
+{% block content %}
+    <h1 class="mb-4">工程师问题列表</h1>
+
+    <!-- 筛选表单 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">筛选条件</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row">
+                <div class="col-md-2">
+                    <label for="status">状态</label>
+                    <select class="form-control" id="status" name="status">
+                        <option value="">全部状态</option>
+                        <option value="New" {{ 'selected' if request.args.get('status') == 'New' }}>新建</option>
+                        <option value="Assigned" {{ 'selected' if request.args.get('status') == 'Assigned' }}>已指派</option>
+                        <option value="In Progress" {{ 'selected' if request.args.get('status') == 'In Progress' }}>处理中</option>
+                        <option value="Resolved" {{ 'selected' if request.args.get('status') == 'Resolved' }}>已解决</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="carline">车型</label>
+                    <select class="form-control" id="carline" name="carline">
+                        <option value="">全部车型</option>
+                        <option value="A-Class" {{ 'selected' if request.args.get('carline') == 'A-Class' }}>A-Class</option>
+                        <option value="C-Class" {{ 'selected' if request.args.get('carline') == 'C-Class' }}>C-Class</option>
+                        <option value="E-Class" {{ 'selected' if request.args.get('carline') == 'E-Class' }}>E-Class</option>
+                        <option value="S-Class" {{ 'selected' if request.args.get('carline') == 'S-Class' }}>S-Class</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="function_domain">功能域</label>
+                    <select class="form-control" id="function_domain" name="function_domain">
+                        <option value="">全部功能域</option>
+                        {% for domain in function_domains %}
+                        <option value="{{ domain }}" {{ 'selected' if request.args.get('function_domain') == domain }}>{{ domain }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="specific_function">具体功能</label>
+                    <select class="form-control" id="specific_function" name="specific_function">
+                        <option value="">全部功能</option>
+                        {% for function in specific_functions %}
+                        <option value="{{ function }}" {{ 'selected' if request.args.get('specific_function') == function }}>{{ function }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label>&nbsp;</label>
+                    <div>
+                        <button type="submit" class="btn btn-primary">筛选</button>
+                        <a href="{{ url_for('engineer.issues') }}" class="btn btn-secondary">重置</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-info" role="alert">
+        共找到 <strong>{{ total_issues }}</strong> 个问题，当前显示第 <strong>{{ page }}</strong> 页，共 <strong>{{ total_pages }}</strong> 页
+    </div>
+
+    {% if issues %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Create Time</th>
+                    <th>Carline</th>
+                    <th>Power</th>
+                    <th>Specific Function</th>
+                    <th>Function Domain</th>
+                    <th>General Domain</th>
+                    <th>Issue Type</th>
+                    <th>Brief Issue</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for issue in issues %}
+                <tr>
+                    <td>{{ issue.issue_id or 'N/A' }}</td>
+                    <td>{{ issue.create_time or issue.create or 'N/A' }}</td>
+                    <td>{{ issue.carline or 'N/A' }}</td>
+                    <td>{{ issue.power or 'N/A' }}</td>
+                    <td>{{ issue.specific_function or 'N/A' }}</td>
+                    <td>{{ issue.function_domain or 'N/A' }}</td>
+                    <td>{{ issue.general_domain or 'N/A' }}</td>
+                    <td>{{ issue.issue_type or 'N/A' }}</td>
+                    <td>{{ issue.brief_issue_en or issue.brief_issue or 'N/A' }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if issue.status == 'Resolved' else 'warning' if issue.status == 'In Progress' else 'info' if issue.status == 'Assigned' else 'secondary' }}">
+                            {{ issue.status or 'New' }}
+                        </span>
+                    </td>
+                    <td>
+                        {{ render_assigned_user(issue.assigned_to_user_id) }}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('engineer.issue_detail_engineer', issue_id=issue.issue_id) }}" class="btn btn-sm btn-info">View Detail</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- 分页控件 -->
+    {% if total_pages > 1 %}
+    <nav aria-label="分页导航">
+        <ul class="pagination justify-content-center">
+            <!-- 上一页 -->
+            {% if page > 1 %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('engineer.issues', page=page-1, status=request.args.get('status'), carline=request.args.get('carline'), function_domain=request.args.get('function_domain'), specific_function=request.args.get('specific_function')) }}">上一页</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">上一页</span>
+            </li>
+            {% endif %}
+            
+            <!-- 页码 -->
+            {% set start_page = page - 2 if page - 2 > 0 else 1 %}
+            {% set end_page = page + 2 if page + 2 < total_pages else total_pages %}
+            {% for p in range(start_page, end_page + 1) %}
+            <li class="page-item {{ 'active' if p == page else '' }}">
+                <a class="page-link" href="{{ url_for('engineer.issues', page=p, status=request.args.get('status'), carline=request.args.get('carline'), function_domain=request.args.get('function_domain'), specific_function=request.args.get('specific_function')) }}">{{ p }}</a>
+            </li>
+            {% endfor %}
+            
+            <!-- 下一页 -->
+            {% if page < total_pages %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('engineer.issues', page=page+1, status=request.args.get('status'), carline=request.args.get('carline'), function_domain=request.args.get('function_domain'), specific_function=request.args.get('specific_function')) }}">下一页</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">下一页</span>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        没有找到符合筛选条件的问题。
+    </div>
+    {% endif %}
+{% endblock %} 
