@@ -1,50 +1,50 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1 class="mb-4">导入 CSV 文件</h1>
+    <h1 class="mb-4">Import CSV File</h1>
 
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title">批量导入问题数据</h5>
+                    <h5 class="card-title">Batch Import Issue Data</h5>
                 </div>
                 <div class="card-body">
                     <form action="{{ url_for('admin.import_csv') }}" method="post" enctype="multipart/form-data">
                         <div class="form-group">
-                            <label for="csv_file">选择 CSV 文件</label>
+                            <label for="csv_file">Select CSV File</label>
                             <input type="file" class="form-control-file" id="csv_file" name="csv_file" accept=".csv" required>
                             <small class="form-text text-muted">
-                                请选择包含问题数据的 CSV 文件。文件应包含以下列：
+                                Please select a CSV file containing issue data. The file should include the following columns:
                                 <ul class="mt-2">
-                                    <li><strong>create_time</strong> - 创建时间 (格式: YYYY-MM-DD)</li>
-                                    <li><strong>Carline</strong> - 车型</li>
-                                    <li><strong>Power</strong> - 动力类型 (ICE, BEV, PHEV)</li>
-                                    <li><strong>Specific Function</strong> - 具体功能</li>
-                                    <li><strong>Function Domain</strong> - 功能域</li>
-                                    <li><strong>General Domain</strong> - 通用域</li>
-                                    <li><strong>Issue Type</strong> - 问题类型</li>
-                                    <li><strong>Description</strong> - 详细描述 (中文)</li>
-                                    <li><strong>Description En</strong> - 详细描述 (英文)</li>
-                                    <li><strong>Brief_Issue</strong> - 简要问题 (中文)</li>
-                                    <li><strong>Brief_Issue_En</strong> - 简要问题 (英文)</li>
+                                    <li><strong>create_time</strong> - Create Time (Format: YYYY-MM-DD)</li>
+                                    <li><strong>Carline</strong> - Carline</li>
+                                    <li><strong>Power</strong> - Power Type (ICE, BEV, PHEV)</li>
+                                    <li><strong>Specific Function</strong> - Specific Function</li>
+                                    <li><strong>Function Domain</strong> - Function Domain</li>
+                                    <li><strong>General Domain</strong> - General Domain</li>
+                                    <li><strong>Issue Type</strong> - Issue Type</li>
+                                    <li><strong>Description</strong> - Description (Chinese)</li>
+                                    <li><strong>Description En</strong> - Description (English)</li>
+                                    <li><strong>Brief_Issue</strong> - Brief Issue (Chinese)</li>
+                                    <li><strong>Brief_Issue_En</strong> - Brief Issue (English)</li>
                                 </ul>
                             </small>
                         </div>
                         
                         <div class="alert alert-info" role="alert">
-                            <h6>导入说明：</h6>
+                            <h6>Import Instructions:</h6>
                             <ul class="mb-0">
-                                <li>导入的数据将添加到现有记录后面</li>
-                                <li>系统会自动分配新的全局 ID</li>
-                                <li>导入的记录将标记为管理员导入</li>
-                                <li>使用当前时间作为批号标识</li>
-                                <li>空行和格式错误的行将被跳过</li>
+                                <li>The imported data will be appended to existing records</li>
+                                <li>The system will automatically assign new global IDs</li>
+                                <li>Imported records will be marked as admin imported</li>
+                                <li>The current time will be used as the batch identifier</li>
+                                <li>Blank lines and rows with format errors will be skipped</li>
                             </ul>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary">开始导入</button>
-                        <a href="{{ url_for('admin.manage_issues') }}" class="btn btn-secondary">返回问题管理</a>
+                        <button type="submit" class="btn btn-primary">Start Import</button>
+                        <a href="{{ url_for('admin.manage_issues') }}" class="btn btn-secondary">Back to Issue Management</a>
                     </form>
                 </div>
             </div>
@@ -55,12 +55,12 @@
         <div class="col-md-8 offset-md-2">
             <div class="card">
                 <div class="card-header">
-                    <h6>CSV 文件格式示例</h6>
+                    <h6>CSV File Format Example</h6>
                 </div>
                 <div class="card-body">
                     <pre class="bg-light p-3"><code>create_time,Carline,Power,Specific Function,Function Domain,General Domain,Issue Type,Description,Description En,Brief_Issue,Brief_Issue_En
-2024-09-22,177,ICE,Driving Assist,ADAS,Software,User Experience Issue,360摄像头不灵敏，快要撞到了都不出来，而且打转向灯也不出来,"The 360-degree camera is not sensitive, it doesn't even respond when I'm about to collide, and it also fails to display the turn signal.",改进后摄像头设计,Optimized rear camera design
-2024-09-22,118,ICE,Remote Control,Mme APP,Software,New Requirement,APP远程控制给CLA200加上远程启动和开空调功能,The APP remote control adds remote start and air conditioning turn-on functions to my CLA200.,改进空调控制功能,Enhance air conditioning control function</code></pre>
+2024-09-22,177,ICE,Driving Assist,ADAS,Software,User Experience Issue,360 camera not sensitive, doesn't respond when about to collide, and turn signal also doesn't display,"The 360-degree camera is not sensitive, it doesn't even respond when I'm about to collide, and it also fails to display the turn signal.",Improved rear camera design,Optimized rear camera design
+2024-09-22,118,ICE,Remote Control,Mme APP,Software,New Requirement,APP remote control adds remote start and air conditioning functions to CLA200,The APP remote control adds remote start and air conditioning turn-on functions to my CLA200.,Enhanced air conditioning control function,Enhance air conditioning control function</code></pre>
                 </div>
             </div>
         </div>

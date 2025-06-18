@@ -18,7 +18,7 @@ class Config:
     
     # 发件人信息
     EMAIL_FROM = os.environ.get('EMAIL_FROM') or SMTP_USERNAME
-    EMAIL_FROM_NAME = os.environ.get('EMAIL_FROM_NAME') or 'AnswerCustomer System'
+    EMAIL_FROM_NAME = os.environ.get('EMAIL_FROM_NAME') or 'DirectVoice System'
 
     # Common Mercedes-Benz Car Models
     MERCEDES_CARLINES = [

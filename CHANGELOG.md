@@ -1,6 +1,6 @@
 # AnswerCustomer Changelog
 
-## 2024-12-19
+## 2025-6-18
 
 ### Added
 - 新增完整的文档系统
@@ -21,6 +21,15 @@
   - 修复Issue模型from_dict方法中notified字段类型转换问题
   - 确保邮件通知后正确更新notified状态为1
   - 支持单个问题和批量通知的状态更新
+- 新增邮件访问链接功能
+  - 在通知邮件中添加直接链接到engineer/issues和admin/issues页面
+  - 自动检测当前服务器URL并生成正确的访问链接
+  - 支持动态服务器地址，适应不同部署环境
+  - 方便工程师和管理员直接从邮件访问系统处理问题
+  - 更新EmailNotifier构造函数，添加server_url参数支持
+  - 优化邮件内容格式，提供更好的用户体验
+- Email notification links: Added direct links to engineer/issues and admin/issues pages in notification emails for easy access
+- Server URL detection: Email notifier now automatically detects and uses the current server URL for generating access links
 
 ### Changed
 - 完全重写 `README.md` 项目主文档
@@ -48,6 +57,17 @@
   - 当额外信息为空时，不在评论中显示"额外信息: 已清空"
   - 只有当额外信息有实际内容时才在评论中记录
   - 支持空格过滤，只包含空格的内容不记录
+- 增强邮件内容功能
+  - 在通知邮件中添加系统访问链接，方便直接访问
+  - 自动检测服务器地址，支持不同部署环境
+  - 优化邮件格式，提供更好的用户体验
+- 更新EmailNotifier构造函数
+  - 添加server_url参数支持动态链接生成
+  - 支持自动服务器地址检测
+- 更新admin.py路由
+  - 所有EmailNotifier实例化都添加server_url参数
+  - 使用request.host_url自动获取当前服务器地址
+  - 支持单个问题通知和批量导入通知的链接生成
 
 ### Fixed
 - 修复邮件通知后notified状态更新问题
@@ -59,6 +79,13 @@
 - 修复额外信息评论显示问题
   - 避免显示无意义的空信息记录
   - 优化评论内容，只显示有意义的变化
+- Flask-Login integration issues
+- Password hashing with Flask-Bcrypt
+- Route method conflicts
+- CSV import validation and error handling
+- Pagination logic with Jinja2 compatibility
+- Email notification modal functionality
+- Template reference errors
 
 ## 2024-06-17
 
@@ -144,17 +171,3 @@
 - 清理测试文件
   - 删除临时测试脚本
   - 整理tests目录结构
-
-## 2023-10-27
-
-### Added
-- Created `.cursorrules.md` for project-specific configurations.
-- Designed `Issue` data structure in `app/models/issue.py` based on provided Excel sheet.
-- Generated initial `README.md` with project overview, setup, architecture, and development guidelines.
-
-### Updated
-- Refined `.cursorrules.md` content and hierarchy for better readability and organization.
-- Updated GitHub repository link, author info, and contact email in `README.md`.
-
-### Fixed
-- Corrected JSON formatting issues in `.cursorrules` (before converting to `.cursorrules.md`). 

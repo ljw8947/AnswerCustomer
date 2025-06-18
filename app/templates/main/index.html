@@ -2,29 +2,29 @@
 
 {% block content %}
     <div class="jumbotron text-center">
-        <h1 class="display-4">欢迎来到 AnswerCustomer</h1>
-        <p class="lead">汽车问题解决方案管理系统。</p>
+        <h1 class="display-4">Welcome to DirectVoice</h1>
+        <p class="lead">Automotive Issue Management System.</p>
         <hr class="my-4">
-        <p>这是一个专业的汽车问题管理系统，工程师可以处理用户提交的问题，管理员可以管理整个系统。</p>
-        <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register_engineer') }}" role="button">工程师注册</a>
-        <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.login') }}" role="button">已有账号？登录</a>
+        <p>This is a professional automotive issue management system where engineers can handle user-submitted problems and administrators can manage the entire system.</p>
+        <a class="btn btn-primary btn-lg" href="{{ url_for('auth.register_engineer') }}" role="button">Engineer Registration</a>
+        <a class="btn btn-secondary btn-lg" href="{{ url_for('auth.login') }}" role="button">Have an account? Login</a>
     </div>
 
     <div class="row">
         <div class="col-md-4">
-            <h2>问题管理</h2>
-            <p>工程师可以查看和处理用户提交的汽车问题，提供专业的解决方案。</p>
-            <p><a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}" role="button">登录处理 &raquo;</a></p>
+            <h2>Issue Management</h2>
+            <p>Engineers can view and handle user-submitted automotive issues, providing professional solutions.</p>
+            <p><a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}" role="button">Login to Process &raquo;</a></p>
         </div>
         <div class="col-md-4">
-            <h2>系统管理</h2>
-            <p>管理员可以管理用户、查看统计信息、导入数据等系统功能。</p>
-            <p><a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}" role="button">管理登录 &raquo;</a></p>
+            <h2>System Administration</h2>
+            <p>Administrators can manage users, view statistics, import data and other system functions.</p>
+            <p><a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}" role="button">Admin Login &raquo;</a></p>
         </div>
         <div class="col-md-4">
-            <h2>数据导入</h2>
-            <p>支持CSV文件导入，方便批量处理用户问题和数据管理。</p>
-            <p><a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}" role="button">了解更多 &raquo;</a></p>
+            <h2>Data Import</h2>
+            <p>Support CSV file import for convenient batch processing of user issues and data management.</p>
+            <p><a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}" role="button">Learn More &raquo;</a></p>
         </div>
     </div>
 {% endblock %} 

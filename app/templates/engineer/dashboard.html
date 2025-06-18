@@ -2,13 +2,13 @@
 
 {% block content %}
     <div class="jumbotron">
-        <h1 class="display-4">欢迎，工程师！</h1>
-        <p class="lead">这是您的工程师仪表盘，您可以在这里查看和处理分配给您的或您关注的问题。</p>
+        <h1 class="display-4">Welcome, Engineer!</h1>
+        <p class="lead">This is your engineer dashboard where you can view and handle issues assigned to you or that you are following.</p>
         <hr class="my-4">
-        <p>使用左侧的导航栏或下面的链接来执行任务。</p>
+        <p>Use the navigation bar on the left or the links below to perform tasks.</p>
         <p class="lead">
-            <a class="btn btn-primary btn-lg" href="{{ url_for('engineer.issues') }}" role="button">查看问题列表</a>
-            {# <a class="btn btn-secondary btn-lg" href="#" role="button">我的关注</a> #}
+            <a class="btn btn-primary btn-lg" href="{{ url_for('engineer.issues') }}" role="button">View Issue List</a>
+            {# <a class="btn btn-secondary btn-lg" href="#" role="button">My Follows</a> #}
         </p>
     </div>
 {% endblock %} 

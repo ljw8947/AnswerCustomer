@@ -8,75 +8,75 @@
         {% elif assigned_to_user_id == 'Engineer1' %}
             Engineer1
         {% else %}
-            未知
+            Unknown
         {% endif %}
     {% else %}
-        未指派
+        Unassigned
     {% endif %}
 {% endmacro %}
 
 {% block content %}
-    <h1 class="mb-4">问题详情</h1>
+    <h1 class="mb-4">Issue Detail</h1>
 
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="card-title">问题 #{{ issue.global_id }} ({{ issue.issue_id }})</h5>
+            <h5 class="card-title">Issue #{{ issue.global_id }} ({{ issue.issue_id }})</h5>
         </div>
         <div class="card-body">
             <dl class="row">
-                <dt class="col-sm-2">创建日期</dt>
+                <dt class="col-sm-2">Create Date</dt>
                 <dd class="col-sm-10">{{ issue.create_time }}</dd>
 
-                <dt class="col-sm-2">车型</dt>
+                <dt class="col-sm-2">Carline</dt>
                 <dd class="col-sm-10">{{ issue.carline }}</dd>
 
-                <dt class="col-sm-2">具体功能</dt>
+                <dt class="col-sm-2">Specific Function</dt>
                 <dd class="col-sm-10">{{ issue.specific_function }}</dd>
 
-                <dt class="col-sm-2">总体类别</dt>
+                <dt class="col-sm-2">General Domain</dt>
                 <dd class="col-sm-10">{{ issue.general }}</dd>
 
-                <dt class="col-sm-2">问题类型</dt>
+                <dt class="col-sm-2">Issue Type</dt>
                 <dd class="col-sm-10">{{ issue.issue_type }}</dd>
 
-                <dt class="col-sm-2">详细描述</dt>
+                <dt class="col-sm-2">Description</dt>
                 <dd class="col-sm-10">{{ issue.description }}</dd>
 
-                <dt class="col-sm-2">简要问题</dt>
+                <dt class="col-sm-2">Brief Issue</dt>
                 <dd class="col-sm-10">{{ issue.brief_issue }}</dd>
 
-                <dt class="col-sm-2">状态</dt>
+                <dt class="col-sm-2">Status</dt>
                 <dd class="col-sm-10"><span class="badge badge-{{ 'success' if issue.status == 'Resolved' else ('primary' if issue.status == 'Assigned' else ('warning' if issue.status == 'In Progress' else 'secondary')) }}">{{ issue.status }}</span></dd>
 
-                <dt class="col-sm-2">指派给</dt>
+                <dt class="col-sm-2">Assigned To</dt>
                 <dd class="col-sm-10">{{ render_assigned_user(issue.assigned_to_user_id) }}</dd>
 
-                <dt class="col-sm-2">额外信息</dt>
-                <dd class="col-sm-10">{{ issue.extra_info or '无' }}</dd>
+                <dt class="col-sm-2">Extra Info</dt>
+                <dd class="col-sm-10">{{ issue.extra_info or 'None' }}</dd>
             </dl>
         </div>
         <div class="card-footer">
-            <a href="{{ url_for('engineer.issues') }}" class="btn btn-secondary">返回列表</a>
-            <a href="{{ url_for('engineer.process_issue', issue_id=issue.issue_id) }}" class="btn btn-primary">处理问题</a>
+            <a href="{{ url_for('engineer.issues') }}" class="btn btn-secondary">Back to List</a>
+            <a href="{{ url_for('engineer.process_issue', issue_id=issue.issue_id) }}" class="btn btn-primary">Process Issue</a>
         </div>
     </div>
 
-    <!-- 评论区域 -->
+    <!-- Comments Section -->
     <div class="card">
         <div class="card-header">
-            <h5 class="card-title mb-0">评论 ({{ comments|length }})</h5>
+            <h5 class="card-title mb-0">Comments ({{ comments|length }})</h5>
         </div>
         <div class="card-body">
-            <!-- 添加评论表单 -->
+            <!-- Add Comment Form -->
             <form action="{{ url_for('engineer.add_comment', issue_id=issue.issue_id) }}" method="post" class="mb-4">
                 <div class="form-group">
-                    <label for="content">添加评论</label>
-                    <textarea class="form-control" id="content" name="content" rows="3" placeholder="请输入您的评论..." required></textarea>
+                    <label for="content">Add Comment</label>
+                    <textarea class="form-control" id="content" name="content" rows="3" placeholder="Enter your comment..." required></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">发表评论</button>
+                <button type="submit" class="btn btn-primary">Submit Comment</button>
             </form>
 
-            <!-- 评论列表 -->
+            <!-- Comment List -->
             {% if comments %}
                 <hr>
                 <div class="comments-list">
@@ -98,7 +98,7 @@
                 </div>
             {% else %}
                 <div class="text-center text-muted py-4">
-                    <p>暂无评论，成为第一个评论的人吧！</p>
+                    <p>No comments yet. Be the first to comment!</p>
                 </div>
             {% endif %}
         </div>

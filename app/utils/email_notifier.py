@@ -6,7 +6,8 @@ import logging
 
 class EmailNotifier:
     def __init__(self, smtp_server: str = 'localhost', smtp_port: int = 587, 
-                 username: str = None, password: str = None, use_tls: bool = True):
+                 username: str = None, password: str = None, use_tls: bool = True,
+                 server_url: str = 'http://localhost:5000'):
         """
         Initialize email notifier with SMTP settings.
         
@@ -16,12 +17,14 @@ class EmailNotifier:
             username: SMTP username (if authentication required)
             password: SMTP password (if authentication required)
             use_tls: Whether to use TLS encryption
+            server_url: Base URL of the server for generating links
         """
         self.smtp_server = smtp_server
         self.smtp_port = smtp_port
         self.username = username
         self.password = password
         self.use_tls = use_tls
+        self.server_url = server_url.rstrip('/')
         
     def send_issue_notification(self, to_emails: List[str], specific_function: str, 
                                issues: List[Dict], batch_id: str = None) -> bool:
@@ -44,7 +47,7 @@ class EmailNotifier:
         try:
             # Create message
             msg = MIMEMultipart()
-            msg['Subject'] = f'New Issues Notification - {specific_function}'
+            msg['Subject'] = f'New Issue Notification - {specific_function}'
             msg['From'] = self.username or 'noreply@example.com'
             msg['To'] = ', '.join(to_emails)
             
@@ -69,7 +72,7 @@ class EmailNotifier:
     
     def _create_email_body(self, specific_function: str, issues: List[Dict], batch_id: str = None) -> str:
         """
-        Create the email body content.
+        Create the email body content (English).
         
         Args:
             specific_function: The specific function name
@@ -79,31 +82,35 @@ class EmailNotifier:
         Returns:
             str: Formatted email body
         """
-        body = f"""新问题通知
+        body = f"""New Issue Notification
 
 Specific Function: {specific_function}
-批次ID: {batch_id or 'N/A'}
-问题数量: {len(issues)}
+Batch ID: {batch_id or 'N/A'}
+Number of Issues: {len(issues)}
 
-问题详情:
+Issue Details:
 """
         
         for i, issue in enumerate(issues, 1):
             body += f"""
-{i}. 问题 #{issue.get('global_id', 'N/A')}
-    - 车型: {issue.get('carline', 'N/A')}
-    - 功能域: {issue.get('function_domain', 'N/A')}
-    - 问题类型: {issue.get('issue_type', 'N/A')}
-    - 简要描述: {issue.get('brief_issue_en', issue.get('brief_issue', 'N/A'))}
-    - 创建时间: {issue.get('create_time', 'N/A')}
-    - 状态: {issue.get('status', 'New')}
+{i}. Issue #{issue.get('global_id', 'N/A')}
+    - Carline: {issue.get('carline', 'N/A')}
+    - Function Domain: {issue.get('function_domain', 'N/A')}
+    - Issue Type: {issue.get('issue_type', 'N/A')}
+    - Brief Description: {issue.get('brief_issue_en', issue.get('brief_issue', 'N/A'))}
+    - Create Time: {issue.get('create_time', 'N/A')}
+    - Status: {issue.get('status', 'New')}
 """
         
+        # Add server access links
         body += f"""
 
-请及时处理这些问题。
+Please handle these issues in a timely manner.
 
-此邮件由系统自动发送，请勿回复。
+Access Links:
+- Engineer Issue List: {self.server_url}/engineer/issues
+
+This email was sent automatically by the system. Please do not reply.
 """
         return body
 

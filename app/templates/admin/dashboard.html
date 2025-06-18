@@ -2,15 +2,15 @@
 
 {% block content %}
     <div class="jumbotron">
-        <h1 class="display-4">欢迎，管理员！</h1>
-        <p class="lead">这是您的管理仪表盘，您可以在这里管理问题、导入数据和配置系统设置。</p>
+        <h1 class="display-4">Welcome, Administrator!</h1>
+        <p class="lead">This is your management dashboard where you can manage issues, import data and configure system settings.</p>
         <hr class="my-4">
-        <p>使用下面的链接来执行管理任务。</p>
+        <p>Use the links below to perform administrative tasks.</p>
         <p class="lead">
-            <a class="btn btn-secondary btn-lg" href="{{ url_for('admin.manage_issues') }}" role="button">管理问题</a>
-            <a class="btn btn-success btn-lg" href="{{ url_for('admin.import_csv') }}" role="button">导入 CSV</a>
-            <a class="btn btn-warning btn-lg" href="{{ url_for('admin.manage_categories') }}" role="button">Specific Function管理</a>
-            <a class="btn btn-info btn-lg" href="{{ url_for('admin.email_config') }}" role="button">邮件配置管理</a>
+            <a class="btn btn-secondary btn-lg" href="{{ url_for('admin.manage_issues') }}" role="button">Manage Issues</a>
+            <a class="btn btn-success btn-lg" href="{{ url_for('admin.import_csv') }}" role="button">Import CSV</a>
+            <a class="btn btn-warning btn-lg" href="{{ url_for('admin.manage_categories') }}" role="button">Specific Function Management</a>
+            <a class="btn btn-info btn-lg" href="{{ url_for('admin.email_config') }}" role="button">Email Configuration</a>
         </p>
     </div>
 {% endblock %} 

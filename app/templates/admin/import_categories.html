@@ -5,35 +5,35 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title mb-0">导入 Specific Function 配置</h4>
+                    <h4 class="card-title mb-0">Import Specific Function Configuration</h4>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-info">
-                        <h5 class="alert-heading">导入说明</h5>
-                        <p>请上传 <code>category.csv</code> 文件，系统将自动导入 Specific Function 配置。</p>
-                        <p>导入过程将：</p>
+                        <h5 class="alert-heading">Import Instructions</h5>
+                        <p>Please upload the <code>category.csv</code> file, and the system will automatically import Specific Function configurations.</p>
+                        <p>The import process will:</p>
                         <ul>
-                            <li>读取上传的 category.csv 文件</li>
-                            <li>创建或更新 Specific Function 配置</li>
-                            <li>保留现有的邮箱列表设置</li>
+                            <li>Read the uploaded category.csv file</li>
+                            <li>Create or update Specific Function configurations</li>
+                            <li>Preserve existing email list settings</li>
                         </ul>
                     </div>
 
                     <form action="{{ url_for('admin.import_categories') }}" method="post" enctype="multipart/form-data">
                         <div class="form-group">
-                            <label for="csv_file">选择 category.csv 文件</label>
+                            <label for="csv_file">Select category.csv file</label>
                             <input type="file" class="form-control-file" id="csv_file" name="csv_file" accept=".csv" required>
                         </div>
                         <div class="form-group mt-3">
-                            <button type="submit" class="btn btn-primary btn-lg">上传并导入</button>
-                            <a href="{{ url_for('admin.manage_categories') }}" class="btn btn-secondary">取消</a>
+                            <button type="submit" class="btn btn-primary btn-lg">Upload and Import</button>
+                            <a href="{{ url_for('admin.manage_categories') }}" class="btn btn-secondary">Cancel</a>
                         </div>
                     </form>
 
                     <hr>
 
                     <div class="mt-4">
-                        <h5>category.csv 文件格式要求：</h5>
+                        <h5>category.csv file format requirements:</h5>
                         <div class="table-responsive">
                             <table class="table table-sm table-bordered">
                                 <thead>
