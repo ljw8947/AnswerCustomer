@@ -3,52 +3,49 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import List, Dict
 import logging
+from app.utils.config_manager import ConfigManager
 
 class EmailNotifier:
-    def __init__(self, smtp_server: str = 'localhost', smtp_port: int = 587, 
-                 username: str = None, password: str = None, use_tls: bool = True,
-                 server_url: str = 'http://localhost:5000'):
+    def __init__(self, server_url: str = 'http://localhost:5000', config_file: str = 'email_config.json'):
         """
-        Initialize email notifier with SMTP settings.
-        
+        Initialize email notifier with server URL and config file path.
         Args:
-            smtp_server: SMTP server address
-            smtp_port: SMTP server port
-            username: SMTP username (if authentication required)
-            password: SMTP password (if authentication required)
-            use_tls: Whether to use TLS encryption
             server_url: Base URL of the server for generating links
+            config_file: Path to the email config file
         """
-        self.smtp_server = smtp_server
-        self.smtp_port = smtp_port
-        self.username = username
-        self.password = password
-        self.use_tls = use_tls
         self.server_url = server_url.rstrip('/')
-        
+        self.config_file = config_file
+    
     def send_issue_notification(self, to_emails: List[str], specific_function: str, 
                                issues: List[Dict], batch_id: str = None) -> bool:
         """
         Send issue notification email to specified recipients.
-        
         Args:
             to_emails: List of email addresses to send to
             specific_function: The specific function these issues belong to
             issues: List of issue dictionaries
             batch_id: Optional batch ID for tracking
-            
         Returns:
             bool: True if email sent successfully, False otherwise
         """
         if not to_emails:
             logging.warning("No email addresses provided for notification")
             return False
-            
+        
+        # 每次发送邮件时动态读取最新配置
+        config = ConfigManager.get_email_config(self.config_file)
+        smtp_server = config.get('SMTP_SERVER', 'localhost')
+        smtp_port = config.get('SMTP_PORT', 587)
+        username = config.get('SMTP_USERNAME', None)
+        password = config.get('SMTP_PASSWORD', None)
+        use_tls = config.get('SMTP_USE_TLS', True)
+        email_from = config.get('EMAIL_FROM', username or 'noreply@example.com')
+        
         try:
             # Create message
             msg = MIMEMultipart()
             msg['Subject'] = f'New Issue Notification - {specific_function}'
-            msg['From'] = self.username or 'noreply@example.com'
+            msg['From'] = email_from
             msg['To'] = ', '.join(to_emails)
             
             # Create email body
@@ -56,11 +53,11 @@ class EmailNotifier:
             msg.attach(MIMEText(body, 'plain', 'utf-8'))
             
             # Send email
-            with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
-                if self.use_tls:
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                if use_tls:
                     server.starttls()
-                if self.username and self.password:
-                    server.login(self.username, self.password)
+                if username and password:
+                    server.login(username, password)
                 server.send_message(msg)
                 
             logging.info(f"Notification email sent successfully to {len(to_emails)} recipients for {specific_function}")

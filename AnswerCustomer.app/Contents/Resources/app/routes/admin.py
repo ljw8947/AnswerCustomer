@@ -247,13 +247,7 @@ def import_csv():
             category_manager = current_app.category_manager
             
             # 使用真实的 EmailNotifier
-            email_notifier = EmailNotifier(
-                smtp_server=current_app.config['SMTP_SERVER'],
-                smtp_port=current_app.config['SMTP_PORT'],
-                username=current_app.config['SMTP_USERNAME'],
-                password=current_app.config['SMTP_PASSWORD'],
-                use_tls=current_app.config['SMTP_USE_TLS']
-            )
+            email_notifier = EmailNotifier()
             
             import_result = CsvImporter.import_from_directvoice_format(
                 csv_content, issue_manager, category_manager, email_notifier, batch_id=datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -336,13 +330,7 @@ def notify_issue(issue_id):
         return redirect(url_for('admin.manage_issues'))
     
     # 使用真实的 EmailNotifier
-    email_notifier = EmailNotifier(
-        smtp_server=current_app.config['SMTP_SERVER'],
-        smtp_port=current_app.config['SMTP_PORT'],
-        username=current_app.config['SMTP_USERNAME'],
-        password=current_app.config['SMTP_PASSWORD'],
-        use_tls=current_app.config['SMTP_USE_TLS']
-    )
+    email_notifier = EmailNotifier()
     
     # 转换问题为字典格式
     issue_dict = issue.to_dict()
@@ -424,6 +412,7 @@ def email_config():
 @admin_required
 def test_email_config():
     """测试邮件配置"""
+    import tempfile, os, json
     try:
         # 获取表单数据
         smtp_server = request.form.get('smtp_server')
@@ -433,20 +422,25 @@ def test_email_config():
         email_from = request.form.get('email_from')
         email_from_name = request.form.get('email_from_name')
         smtp_use_tls = 'smtp_use_tls' in request.form
-        
         # 验证必填字段
         if not all([smtp_server, smtp_port, smtp_username, smtp_password, email_from]):
             return jsonify({'success': False, 'error': '请填写所有必填字段'})
-        
-        # 创建邮件通知器
-        email_notifier = EmailNotifier(
-            smtp_server=smtp_server,
-            smtp_port=smtp_port,
-            username=smtp_username,
-            password=smtp_password,
-            use_tls=smtp_use_tls
-        )
-        
+        # 写入临时配置文件
+        config_data = {
+            'SMTP_SERVER': smtp_server,
+            'SMTP_PORT': smtp_port,
+            'SMTP_USERNAME': smtp_username,
+            'SMTP_PASSWORD': smtp_password,
+            'EMAIL_FROM': email_from,
+            'EMAIL_FROM_NAME': email_from_name,
+            'SMTP_USE_TLS': smtp_use_tls
+        }
+        with tempfile.NamedTemporaryFile('w+', delete=False, suffix='.json') as tmpf:
+            json.dump(config_data, tmpf, ensure_ascii=False)
+            tmpf.flush()
+            tmp_config_file = tmpf.name
+        # 创建邮件通知器，传入临时配置文件
+        email_notifier = EmailNotifier(config_file=tmp_config_file)
         # 创建测试邮件数据
         test_issues = [{
             'global_id': 999,
@@ -457,7 +451,6 @@ def test_email_config():
             'create_time': datetime.now().strftime('%Y-%m-%d'),
             'status': 'New'
         }]
-        
         # 发送测试邮件
         success = email_notifier.send_issue_notification(
             [smtp_username],  # 发送到配置的邮箱
@@ -465,7 +458,8 @@ def test_email_config():
             test_issues,
             f"Test_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         )
-        
+        # 删除临时配置文件
+        os.unlink(tmp_config_file)
         if success:
             return jsonify({
                 'success': True,
@@ -477,7 +471,6 @@ def test_email_config():
                 'success': False,
                 'error': '邮件发送失败，请检查配置'
             })
-            
     except Exception as e:
         return jsonify({
             'success': False,

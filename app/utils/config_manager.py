@@ -86,4 +86,12 @@ class ConfigManager:
             return self.save_email_config(current_config)
         except Exception as e:
             print(f"更新配置失败: {str(e)}")
-            return False 
+            return False
+
+    @staticmethod
+    def get_email_config(config_file: str = 'email_config.json') -> Dict[str, Any]:
+        """
+        静态方法，便于全局直接获取邮件配置
+        """
+        manager = ConfigManager(config_file)
+        return manager.load_email_config() 
