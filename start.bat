@@ -1,27 +1,27 @@
 @echo off
 chcp 65001 >nul
-title AnswerCustomer
+title AnswerCustomer Launcher
 
 echo.
 echo ========================================
-echo    AnswerCustomer 启动器
+echo    AnswerCustomer Launcher
 echo ========================================
 echo.
 
-:: 检查Python
+:: Check Python
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo ❌ 未检测到Python，请先安装Python
+    echo [31m Python not detected. Please install Python first.
     pause
     exit /b 1
 )
 
-:: 安装依赖
-echo 📦 安装依赖...
+:: Install dependencies
+echo [34m Installing dependencies...
 python -m pip install -r requirements.txt
 
-:: 启动服务器
-echo 🚀 启动服务器...
+:: Start server
+echo [32m Starting server...
 python run.py
 
 pause 

@@ -1,55 +1,55 @@
 @echo off
 chcp 65001 >nul
-title AnswerCustomer 启动器
+title AnswerCustomer Launcher
 
 echo.
 echo ========================================
-echo    AnswerCustomer 启动器
+echo    AnswerCustomer Launcher
 echo ========================================
 echo.
 
-:: 检查Python是否安装
+:: Check if Python is installed
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo ❌ 未检测到Python，请先安装Python 3.7或更高版本
-    echo    下载地址: https://www.python.org/downloads/
+    echo [31m Python not detected. Please install Python 3.7 or higher.
+    echo    Download: https://www.python.org/downloads/
     pause
     exit /b 1
 )
 
-echo ✅ Python环境检查通过
+echo [32m Python environment check passed
 
-:: 检查是否在项目目录
+:: Check if in project directory
 if not exist "run.py" (
-    echo ❌ 请在AnswerCustomer项目目录中运行此脚本
+    echo [31m Please run this script in the AnswerCustomer project directory.
     pause
     exit /b 1
 )
 
-:: 创建数据目录
+:: Create data directories
 if not exist "data" mkdir data
 if not exist "data\csv" mkdir data\csv
 if not exist "data\config" mkdir data\config
 
-echo ✅ 数据目录检查完成
+echo [32m Data directory check complete
 
-:: 安装依赖
+:: Install dependencies
 echo.
-echo 📦 正在安装项目依赖...
+echo [34m Installing project dependencies...
 python -m pip install --upgrade pip >nul 2>&1
 python -m pip install -r requirements.txt
 
 if errorlevel 1 (
-    echo ❌ 依赖安装失败
+    echo [31m Dependency installation failed
     pause
     exit /b 1
 )
 
-echo ✅ 依赖安装完成
+echo [32m Dependencies installed successfully
 
-:: 查找可用端口
+:: Find available port
 echo.
-echo 🔍 正在查找可用端口...
+echo [33m Searching for available port...
 for /l %%i in (5000,1,5009) do (
     netstat -an | find "127.0.0.1:%%i" >nul 2>&1
     if errorlevel 1 (
@@ -57,30 +57,30 @@ for /l %%i in (5000,1,5009) do (
         goto :found_port
     )
 )
-echo ❌ 无法找到可用端口
+echo [31m No available port found
 pause
 exit /b 1
 
 :found_port
-echo ✅ 找到可用端口: %PORT%
+echo [32m Found available port: %PORT%
 
-:: 启动服务器
+:: Start server
 echo.
-echo 🚀 正在启动服务器 (端口: %PORT%)...
+echo [32m Starting server (port: %PORT%)...
 echo.
 echo ========================================
-echo    服务器启动中，请稍候...
+echo    Server is starting, please wait...
 echo ========================================
 echo.
 
-:: 设置环境变量
+:: Set environment variables
 set FLASK_APP=run.py
 set FLASK_ENV=development
 
-:: 启动服务器
+:: Start server
 start "" "http://localhost:%PORT%"
 python run.py --port %PORT%
 
 echo.
-echo 🛑 服务器已停止
+echo [33m Server stopped
 pause 
